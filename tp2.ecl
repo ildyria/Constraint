@@ -1,5 +1,5 @@
 /**
-TP 1 Decouverte de la biblioteque de contrainte a domaine fini
+TP 2 Contraintes logiques
 
 @author Julien BOUVET
 @author Benoît VIGUIER
