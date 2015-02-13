@@ -1,5 +1,5 @@
 /**
-TP 1 Decouverte de la biblioteque de contrainte a domaine fini
+TP 3 Ordonnancement de tâches sur deux machines
 
 @author Julien BOUVET
 @author Benoît VIGUIER
@@ -11,6 +11,7 @@ TP 1 Decouverte de la biblioteque de contrainte a domaine fini
 	Includes
 ===============================================================================
 */
+
 :-lib(ic).
 :-lib(ic_global).
 :-lib(ic_symbolic).
@@ -21,161 +22,165 @@ TP 1 Decouverte de la biblioteque de contrainte a domaine fini
 ===============================================================================
 */
 
-:- local domain(color(red,green,blue,white,yellow)).
-:- local domain(drink(cafe,tea,milk,juice,water)).
-:- local domain(car(ford,bmw,toyota,honda,datsun)).
-:- local domain(animal(dog,snake,fox,horse,zebra)).
-:- local domain(num(one,two,three,four,five)).
-:- local domain(country(england,spain,ukrain,norway,japanese)).
+%% tache(int: Duree, []: ListPrevious, str: Machine,int: Debut).
+
+%% tache(Duree, ListPrevious, Machine, Debut).
+
+taches(T) :- 
+T = [](	tache(3, [], 	m1, _),
+		tache(8, [], 	m1, _),
+		tache(8, [4,5], m1, _),
+		tache(6, [], 	m2, _),
+		tache(3, [1], 	m2, _),
+		tache(4, [1,7], m1, _),
+		tache(8, [3,5], m1, _),
+		tache(6, [4], 	m2, _),
+		tache(6, [6,7], m2, _),
+		tache(6, [9,12], m2, _),
+		tache(3, [1], 	m2, _),
+		tache(6, [7,8], m2, _)).
 
 
-domaines_maison(m(Pays,Couleur,Boisson,Voiture,Animal,Numero)) :- 
-	Pays &:: country,
-	Couleur &:: color,
-	Boisson &:: drink,
-	Voiture &:: car,
-	Animal &:: animal,
-	Numero &:: num.
 
-rue([m(Pays1,Couleur1,Boisson1,Voiture1,Animal1,Num1),
-	m(Pays2,Couleur2,Boisson2,Voiture2,Animal2,Num2),
-	m(Pays3,Couleur3,Boisson3,Voiture3,Animal3,Num3),
-	m(Pays4,Couleur4,Boisson4,Voiture4,Animal4,Num4),
-	m(Pays5,Couleur5,Boisson5,Voiture5,Animal5,Num5)
-	]) :-
-	domaines_maison(m(Pays1,Couleur1,Boisson1,Voiture1,Animal1,Num1)),
-	domaines_maison(m(Pays2,Couleur2,Boisson2,Voiture2,Animal2,Num2)),
-	domaines_maison(m(Pays3,Couleur3,Boisson3,Voiture3,Animal3,Num3)),
-	domaines_maison(m(Pays4,Couleur4,Boisson4,Voiture4,Animal4,Num4)),
-	domaines_maison(m(Pays5,Couleur5,Boisson5,Voiture5,Animal5,Num5)),
-	ic_symbolic:alldifferent([Num1,Num2,Num3,Num4,Num5]),
-	ic_symbolic:alldifferent([Pays1,Pays2,Pays3,Pays4,Pays5]),
-	ic_symbolic:alldifferent([Couleur1,Couleur2,Couleur3,Couleur4,Couleur5]),
-	ic_symbolic:alldifferent([Boisson1,Boisson2,Boisson3,Boisson4,Boisson5]),
-	ic_symbolic:alldifferent([Voiture1,Voiture2,Voiture3,Voiture4,Voiture5]),
-	ic_symbolic:alldifferent([Animal1,Animal2,Animal3,Animal4,Animal5]),
-	Num1 &= one,
-	Num2 &= two,
-	Num3 &= three,
-	Num4 &= four,
-	Num5 &= five.
+%%apply the solve
+solve(Taches,Fin) :-
+	domaines(Taches, Fin),
+	apply_constraints(Taches),
+	getVarList(Taches, VarList),
+	labeling(VarList),
+	display_taches(Taches).
 
-ecrit_maisons(R) :-
-	(foreach(M,R) do
-			writeln(M)
+
+%% diplay the tasks
+display_taches(Taches) :-
+	dim(Taches, [Dim]),
+	(
+	 for(I, 1, Dim),
+		param(Taches)
+	 do
+	 (
+	 	Xi is Taches[I],
+	 	writeln(Xi)
+	 )
 	).
 
-getVarList([],[]).
-getVarList([m(Pays,Couleur,Boisson,Voiture,Animal,Numero)|T],
-	[Pays,Couleur,Boisson,Voiture,Animal,Numero|Result]) :-
-	getVarList(T,Result).
-
-labeling_symbolic([]).
-labeling_symbolic([H|T]) :-
-	ic_symbolic:indomain(H),
-	labeling_symbolic(T).
-
-resoudre(Rue) :-
-	rue(Rue),
-	set_constraint_maison1(Rue),
-	set_constraint_maison2(Rue),
-	%% set_constraint_maison3(Rue),
-	%% set_constraint_maison4(Rue),
-	set_constraint_maison5(Rue),
-	%% set_constraint_maison6(Rue),
-	%% set_constraint_maison7(Rue),
-	%% set_constraint_maison8(Rue),
-	%% set_constraint_maison9(Rue),
-	%% set_constraint_maison10(Rue),
-	%% set_constraint_maison11(Rue),
-	%% set_constraint_maison12(Rue),
-	%% set_constraint_maison13(Rue),
-	%% set_constraint_maison14(Rue),
-	getVarList(Rue,VarList),
-	labeling_symbolic(VarList),
-	ecrit_maisons(Rue).
-
-set_constraint_maison1(R) :- 
-	member(m(Pays,Couleur,_Boisson,_Voiture,_Animal,_Num),R),
-	Pays &= england,
-	Couleur &= red.
-
-set_constraint_maison2(R) :- 
-	member(m(Pays,_Couleur,_Boisson,_Voiture,Animal,_Num),R),
-	Pays &= spain,
-	Animal &= dog.
-
-set_constraint_maison3(R) :- 
-	member(m(_Pays,Couleur,Boisson,_Voiture,_Animal,_Num),R),
-	Couleur &= green,
-	Boisson &= cafe.
 
 
-set_constraint_maison4(R) :- 
-	member(m(Pays,_Couleur,Boisson,_Voiture,_Animal,_Num),R),
-	Pays &= ukrain,
-	Boisson &= tea.
+%% apply the domain to the start
+domaines(Taches, Fin) :- 
+	sum_times(Taches, Fin),
+	!,
+	apply_Fin(Taches,Fin).
 
-set_constraint_maison5(R) :- 
-	member(m(_Pays,CouleurV,_Boisson,_Voiture,_Animal,NumV),R),
-	member(m(_Pays,CouleurB,_Boisson,_Voiture,_Animal,NumB),R),
-	CouleurB &= white,
-	CouleurV &= green,
-	((NumV &= five)
-	or	(NumV &= four, NumB &= three)
-	or	(NumV &= four, NumB &= two)
-	or	(NumV &= four, NumB &= one)
-	or	(NumV &= three, NumB &= two)
-	or	(NumV &= two, NumB &= one)).
+domaines(Taches, Fin) :-
+	apply_Fin(Taches,Fin).
 
-set_constraint_maison6(R) :- 
-	member(m(_Pays,_Couleur,_Boisson,Voiture,Animal,_Num),R),
-	Voiture &= bmw,
-	Animal &= snake.
+apply_Fin(Taches,Fin) :-
+	dim(Taches, [Dim]),
+	(
+	 for(I, 1, Dim),
+		param(Taches), param(Fin)
+	 do
+	 (
+	 	tache(Duree, _ListPrevious, _Machine, Debut) is Taches[I],
+	 	FinTache is Fin - Duree,
+	 	Debut #:: 0..FinTache
+	 )
+	).
 
-set_constraint_maison7(R) :- 
-	member(m(_Pays,Couleur,_Boisson,Voiture,_Animal,_Num),R),
-	Couleur &= yellow,
-	Voiture &= toyota.
+%% look for a possible maximum value of Fin in the event it wouldn't be provided
+sum_item(Taches,Sum,Return,Max,Max) :-
+	!,
+	tache(Duree, _ListPrevious, _Machine, _Debut) is Taches[Max],
+	Return is Sum + Duree.
+sum_item(Taches,Sum,Return,Index,Max) :-
+	tache(Duree, _ListPrevious, _Machine, _Debut) is Taches[Index],
+	Sum2 is Sum + Duree,
+	Index2 is Index + 1,
+	sum_item(Taches,Sum2,Return,Index2,Max).
 
-set_constraint_maison8(R) :- 
-	member(m(_Pays,_Couleur,Boisson,_Voiture,_Animal,Num),R),
-	Boisson &= milk,
-	Num &= three.
+sum_times(Taches, Return) :-
+	dim(Taches, [Dim]),
+	sum_item(Taches,0,Return,1,Dim).
 
-set_constraint_maison9(R) :- 
-	member(m(Pays,_Couleur,_Boisson,_Voiture,_Animal,Num),R),
-	Pays &= norway,
-	Num &= one.
 
-set_constraint_maison10(R) :- 
-	member(m(_Pays,_CouleurV,_Boisson,Voiture,_Animal,NumV),R),
-	member(m(_Pays,_CouleurB,_Boisson,_Voiture,Animal,NumA),R),
-	Voiture &= ford,
-	Animal &= fox,
-	(NumV &= NumA + one  or NumA &= NumV + one).
 
-set_constraint_maison11(R) :- 
-	member(m(_Pays,_CouleurV,_Boisson,Voiture,_Animal,NumV),R),
-	member(m(_Pays,_CouleurB,_Boisson,_Voiture,Animal,NumA),R),
-	Voiture &= toyota,
-	Animal &= horse,
-	(NumV &= NumA + one  or NumA &= NumV + one).
 
-set_constraint_maison12(R) :- 
-	member(m(_Pays,_Couleur,Boisson,Voiture,_Animal,_Num),R),
-	Voiture &= honda,
-	Boisson &= juice.
 
-set_constraint_maison13(R) :- 
-	member(m(Pays,_Couleur,_Boisson,Voiture,_Animal,_Num),R),
-	Pays &= japanese,
-	Voiture &= datsun.
+%% Apply constraints
+apply_constraints(Taches):-
+	precedences(Taches),
+	conflicts(Taches).
 
-set_constraint_maison14(R) :- 
-	member(m(Pays,_CouleurV,_Boisson,_Voiture,_Animal,NumN),R),
-	member(m(_Pays,CouleurB,_Boisson,_Voiture,_Animal,NumB),R),
-	Pays &= norway,
-	CouleurB &= blue,
-	(NumN &= NumB + one  or NumB &= NumN + one).
+%% Define precedence contraints
+precedences(Taches) :-
+	dim(Taches, [Dim]),
+	(
+	 for(I, 1, Dim),
+		param(Taches)
+	 do
+	 (
+	 	tache(_Duree, ListPrevious, _Machine, Debut) is Taches[I],
+	 	apply_precedence(Debut,Taches, ListPrevious)
+	 )
+	).
 
+
+apply_precedence(_DebutTask,_Taches, []).
+apply_precedence(DebutTask,Taches, [H|T]) :-
+	tache(Duree, _ListPrevious, _Machine, Debut) is Taches[H],
+	DebutTask #>= Debut + Duree,
+	apply_precedence(DebutTask,Taches, T).
+
+%% Define conflicts contraints
+
+conflicts(Taches) :-
+	dim(Taches, [Dim]),
+	(
+	 for(I, 1, Dim),
+		param(Taches), param(Dim)
+	 do
+	 (
+	 	tache(Duree, _ListPrevious, Machine, Debut) is Taches[I],
+	 	Max is Dim + 1,
+	 	Start is I + 1,
+	 	apply_conflicts(Debut, Duree, Machine, Taches, Start, Max)
+	 )
+	).
+
+
+apply_conflicts(_DebutTask, _Duree, _Machine, _Taches, Max, Max) :-
+	!.
+apply_conflicts(Debut1, Duree1, Machine1, Taches, Index, Max) :-
+	tache(Duree2, _ListPrevious, Machine2, Debut2) is Taches[Index],
+	apply_single_conflic(Debut1,Duree1,Machine1,Debut2,Duree2,Machine2),
+	Index2 is Index + 1,
+	apply_conflicts(Debut1, Duree1, Machine1, Taches, Index2, Max).	
+	
+apply_single_conflic(Debut1,Duree1,Machine,Debut2,Duree2,Machine) :-
+	!,
+	(Debut1 + Duree1 #=< Debut2 or Debut2 + Duree2 #=< Debut1).
+apply_single_conflic(_Debut1,_Duree1,_Machine1,_Debut2,_Duree2,_Machine2).
+
+
+
+
+
+
+
+
+
+%% return the list of variables
+getVarList(Taches, Return) :-
+	dim(Taches, [Dim]),
+	var_item(Taches,[],Return,1,Dim).
+
+var_item(Taches,PreviousList,Return,Max,Max) :-
+	!,
+	tache(_Duree, _ListPrevious, _Machine, Debut) is Taches[Max],
+	Return = [Debut|PreviousList].
+var_item(Taches,PreviousList,ReturnList,Index,Max) :-
+	tache(_Duree, _ListPrevious, _Machine, Debut) is Taches[Index],
+	List = [Debut|PreviousList],
+	Index2 is Index + 1,
+	var_item(Taches,List,ReturnList,Index2,Max).
