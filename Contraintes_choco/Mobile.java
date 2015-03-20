@@ -34,20 +34,29 @@ public class Mobile {
 
 	// constructeur : _lx : longeur de la branche x, m_max : masse maximum disponible
 	public Mobile(int _l1, int _l2, int _l3, int _l4, int m_max) {
+		myModelL = new CPModel();
+		mySolverL = new CPSolver();
+		
+		myModelM = new CPModel();
+		mySolverM = new CPSolver();
+		
 		// a completer
-		iv_l1 = makeIntVar("l1",1,_l1);
-		iv_l2 = makeIntVar("l2",1,_l2);
-		iv_l3 = makeIntVar("l3",1,_l3);
-		iv_l4 = makeIntVar("l4",1,_l4);
+		iv_l1 = makeIntVar("l1",_l1,_l1);
+		iv_l2 = makeIntVar("l2",_l2,_l2);
+		iv_l3 = makeIntVar("l3",_l3,_l3);
+		iv_l4 = makeIntVar("l4",_l4,_l4);
+		
 		myModelL.addVariable(iv_l1);
 		myModelL.addVariable(iv_l2);
 		myModelL.addVariable(iv_l3);
 		myModelL.addVariable(iv_l4);
+		
 		masse_max = m_max;
 
-		iv_m1 = makeIntVar("m1",1,20);
-		iv_m2 = makeIntVar("m2",1,20);
-		iv_m3 = makeIntVar("m3",1,20);
+		iv_m1 = makeIntVar("m1",1,masse_max);
+		iv_m2 = makeIntVar("m2",1,masse_max);
+		iv_m3 = makeIntVar("m3",1,masse_max);
+		
 		myModelM.addVariable(iv_m1);
 		myModelM.addVariable(iv_m2);
 		myModelM.addVariable(iv_m3);
@@ -117,6 +126,7 @@ public class Mobile {
 			l2 = mySolverL.getVar(iv_l2).getVal();
 			l3 = mySolverL.getVar(iv_l3).getVal();
 			l4 = mySolverL.getVar(iv_l4).getVal();
+			coherent = true;
 			return true;
 		}
 		else
@@ -148,6 +158,7 @@ public class Mobile {
 			m1 = mySolverM.getVar(iv_m1).getVal();
 			m2 = mySolverM.getVar(iv_m2).getVal();
 			m3 = mySolverM.getVar(iv_m3).getVal();
+			equilibre = true;
 			return true;
 		}
 		else
@@ -159,9 +170,20 @@ public class Mobile {
 	// cherche une autre solution pour les masses
 	// la recherche d'une autre solution ne doit etre lancee que si le mobile est equilibre
 	public boolean autreSolutionMasse() {
-		if(estEquilibre())
-			return equilibre();
-		return false;
+		
+		if(equilibre && mySolverM.nextSolution())
+		{
+			// return values
+			m1 = mySolverM.getVar(iv_m1).getVal();
+			m2 = mySolverM.getVar(iv_m2).getVal();
+			m3 = mySolverM.getVar(iv_m3).getVal();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	
 	}
 
 	//gestion de l'affichage
@@ -183,6 +205,7 @@ public class Mobile {
 		System.out.println(m);
 		if (m.longueursCoherentes()) {
 			System.out.println("Encombrement OK");
+			System.out.println(m);
 			m.equilibre();
 			System.out.println(m);
 			while (m.autreSolutionMasse()) {
