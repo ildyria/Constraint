@@ -52,7 +52,8 @@ Yes (0.00s cpu)
 	Question 1.2
 ===============================================================================
 
-Prolog est un solveur de contrainte de type Generate & Test avec son mécanisme d'unification.
+Prolog est un solveur de contrainte de type Generate & Test avec son mécanisme
+d'unification.
 
 ===============================================================================
 ===============================================================================
@@ -128,7 +129,6 @@ Yes (2.26s cpu, solution 2, maybe more) ?
 ===============================================================================
 
 cf arbre de recherche sur la version papier.
-
 */
 
 /*
@@ -272,7 +272,7 @@ vabsProlog(Toto,Val) :-
 
 vabsIC(Toto,Val) :- 
 	Val #>= 0,
-	(Toto #= -Val; Toto #= Val).
+	(Toto #= -Val ; Toto #= Val).
 
 /*
 ===============================================================================
@@ -317,6 +317,11 @@ faitListRec(ListVars,ReturnList,CurrentSize,SizeDesired,Min,Max) :-
 faitListRec(ListVars,ListVars,SizeDesired,SizeDesired,_Min,_Max) :- !.
 
 /*
+faitList(ListVars,5,0,5).
+ListVars = [_741{0 .. 5}, _608{0 .. 5}, _475{0 .. 5}, _342{0 .. 5}, _209{0 .. 5}]
+Yes (0.00s cpu, solution 1, maybe more) ? ;
+No (0.00s cpu)
+
 ===============================================================================
 ===============================================================================
 	Question 1.14
@@ -335,6 +340,14 @@ suite([A,B,C|Q]) :-
 	Question 1.15
 ===============================================================================
 */
-suite9p([A,B,C,D,E,F,G,H,A]) :- !.
+suite9p([A,B,C,D,E,F,G,H,A]) :-
+	!,
+	\=(A,B),
+	\=(A,C),
+	\=(A,D),
+	\=(A,E),
+	\=(A,F),
+	\=(A,G),
+	\=(A,H).
 suite9p([A,B,C,D,E,F,G,H,A|Q]) :-
 	suite9p([B,C,D,E,F,G,H,A|Q]).
