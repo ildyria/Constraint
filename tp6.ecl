@@ -13,7 +13,6 @@ TP 6 Sur une balançoire
 */
 :-lib(ic).
 :-lib(ic_global).
-%% :-lib(ic_symbolic).
 :-lib(branch_and_bound).
 
 /*
@@ -22,18 +21,44 @@ TP 6 Sur une balançoire
 ===============================================================================
 */
 
-
 solve(Position) :-
 	variables(Noms,Poids,Position),
 	getVarList(Position,VarList),
 	set_contraint(Noms,Poids,Position,VarList),
-	labeling(VarList).
+	labeling(VarList),
+	print_name(Noms,Position).
+
+%DOES NOT WORK
+opti_solve(Position) :-
+	variables(Noms,Poids,Position),
+	moment(Position,Poids,Moment),
+	minimize(solve(Position),Moment),
+	print_name(Noms,Position).
+
+moment(Position,Poids,Moment) :-
+	abs_vecteur(Position,PositionAbs),
+	produit_scalaire(PositionAbs,Poids,Moment).
 
 variables(Noms,Poids,Position) :- 
 	Poids = [](24,39,85,60,165,6,32,123,7,14),
 	Noms = [](ron,zoe,jim,lou,luc,dan,ted,tom,max,kim),
 	dim(Position,[10]),
 	Position #:: -8..8.
+
+print_name(Noms,Position) :- 
+	dim(Position, [Dim]),
+	(
+     for(I,1,Dim),
+        param(Position,Noms)
+        do
+        (
+        	Name is Noms[I],
+        	write(Name),
+        	write(' '),
+        	Pos is Position[I],
+        	writeln(Pos)
+        )
+    ).
 
 
 set_contraint(Noms,Poids,Position,VarList) :- 
@@ -60,8 +85,7 @@ set_contraint_number(_Noms,_Poids,Position) :-
         	Sum1 #= Sum0 + (Pos #> 0) - (Pos #< 0)
         )
     ),
-	Result #= 0
-    .
+	Result #= 0.
 
 
 set_contraint_assis(_Noms,_Poids,Position) :-
@@ -77,8 +101,7 @@ set_contraint_assis(_Noms,_Poids,Position) :-
         	List2 = [Toto|List1]
         )
     ),
-    ic:alldifferent(Result)
-.
+    ic:alldifferent(Result).
 
 get_position(0,_Position,0) :-
 	!.
@@ -113,8 +136,7 @@ set_contraint_dan_max(Position) :-
 	Maman is Position[4],
 	Papa is Position[8],
 	((Dan #= Papa - 1) or (Dan #= Maman + 1)),
-	((Max #= Papa - 1) or (Max #= Maman + 1))
-	.
+	((Max #= Papa - 1) or (Max #= Maman + 1))	.
 
 
 /*
@@ -149,3 +171,21 @@ produit_scalaire(Vect1,Vect2,Result) :-
 			Sum1 #= Sum0 + ResultInter[I]
 		)
 	 ).
+
+vabsIC(Toto,Val) :- 
+	Val #>= 0,
+	(Toto #= -Val ; Toto #= Val).
+
+abs_vecteur(Vect, Result) :-
+	dim(Vect,[Dim]),
+	dim(Result,[Dim]),
+	(
+	 for(I, 1, Dim),
+		param(Result), param(Vect)
+	 do
+	 (
+		A is Vect[I],
+		vabsIC(A,Abs),
+		Result[I] #= Abs
+	 )
+	).

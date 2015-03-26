@@ -14,10 +14,20 @@ TP 2 Contraintes logiques
 :-lib(ic).
 :-lib(ic_global).
 :-lib(ic_symbolic).
+
 /*
 ===============================================================================
 ===============================================================================
-	Question 1.1
+	Question 2.8
+===============================================================================
+
+
+Le japonais possède un zebre.
+Le norvegien bois de l'eau. 
+
+===============================================================================
+===============================================================================
+	Question 2.1
 ===============================================================================
 */
 
@@ -25,10 +35,15 @@ TP 2 Contraintes logiques
 :- local domain(drink(cafe,tea,milk,juice,water)).
 :- local domain(car(ford,bmw,toyota,honda,datsun)).
 :- local domain(animal(dog,snake,fox,horse,zebra)).
-%% :- local domain(num(one,two,three,four,five)).
 :- local domain(country(england,spain,ukrain,norway,japanese)).
 
 
+/*
+===============================================================================
+===============================================================================
+	Question 2.2
+===============================================================================
+*/
 domaines_maison(m(Pays,Couleur,Boisson,Voiture,Animal,Numero)) :- 
 	Pays &:: country,
 	Couleur &:: color,
@@ -37,6 +52,12 @@ domaines_maison(m(Pays,Couleur,Boisson,Voiture,Animal,Numero)) :-
 	Animal &:: animal,
 	Numero #:: 1..5.
 
+/*
+===============================================================================
+===============================================================================
+	Question 2.3
+===============================================================================
+*/
 rue([m(Pays1,Couleur1,Boisson1,Voiture1,Animal1,Num1),
 	m(Pays2,Couleur2,Boisson2,Voiture2,Animal2,Num2),
 	m(Pays3,Couleur3,Boisson3,Voiture3,Animal3,Num3),
@@ -60,11 +81,24 @@ rue([m(Pays1,Couleur1,Boisson1,Voiture1,Animal1,Num1),
 	ic_symbolic:alldifferent([Animal1,Animal2,Animal3,Animal4,Animal5])
 	.
 
+/*
+===============================================================================
+===============================================================================
+	Question 2.4
+===============================================================================
+*/
 ecrit_maisons(R) :-
 	(foreach(M,R) do
 			writeln(M)
 	).
 
+
+/*
+===============================================================================
+===============================================================================
+	Question 2.5
+===============================================================================
+*/
 getVarList_symbolic([],[]).
 getVarList_symbolic([m(Pays,Couleur,Boisson,Voiture,Animal,_Numero)|T],
 	[Pays,Couleur,Boisson,Voiture,Animal|Result]) :-
@@ -76,6 +110,13 @@ labeling_symbolic([]).
 labeling_symbolic([H|T]) :-
 	ic_symbolic:indomain(H),
 	labeling_symbolic(T).
+
+/*
+===============================================================================
+===============================================================================
+	Question 2.6
+===============================================================================
+*/
 
 resoudre(Rue) :-
 	rue(Rue),
@@ -97,6 +138,12 @@ resoudre(Rue) :-
 	labeling_symbolic(VarList),
 	ecrit_maisons(Rue).
 
+/*
+===============================================================================
+===============================================================================
+	Question 2.7
+===============================================================================
+*/
 set_constraint_maison1(R) :- 
 	member(m(Pays,Couleur,_Boisson,_Voiture,_Animal,_Num),R),
 	Pays &= england,
