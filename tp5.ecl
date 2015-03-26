@@ -18,45 +18,50 @@ TP 5 Contraintes puis chercher
 :-lib(branch_and_bound).
 
 /*
-===============================================================================
-===============================================================================
-	Question 2
-===============================================================================
 
-voilier1 : 7 places
-voilier2 : 6 places
-voilier3 : 5 places
+solvMaxProfit(Fabriquer,NbTechTotal, Result)
+Fabriquer = [](0, 1, 1, 0, 0, 1, 1, 0, 1)
+NbTechTotal = 22
+Result = 2665
 
-equipe1 : 5
-equipe2 : 5
-equipe3 : 2
-equipe4 : 1
+reductionPlan(Fabriquer,NbTechTotal, Result).
+Fabriquer = [](1, 0, 1, 0, 0, 0, 0, 0, 0)
+NbTechTotal = 7
+Result = 1040
+
+===============================================================================
+===============================================================================
+	Code
+===============================================================================
 */
 
+
+% Solve the problem while looking for the maximum profit
 solvMaxProfit(Fabriquer,NbTechTotal, Result) :-
 	Toto #= -Result,
 	minimize(solve(Fabriquer,NbTechTotal, Result),Toto).
 
+% Solve the problem while looking for the maximum profit over 1000 and keeping the Nb of total tech at the minimum.
 reductionPlan(Fabriquer,NbTechTotal, Result) :-
 	Result #> 1000,
 	minimize(solve(Fabriquer,NbTechTotal, Result),NbTechTotal).
 
-
+% Solve the problem, what else ?
 solve(Fabriquer,NbTechTotal, ProfitTotal) :-
 	pose_contrainte(Fabriquer, NbTechTotal, ProfitTotal),
 	getVarList(Fabriquer, VarList),
 	labeling(VarList).
 
-
+% Define the variables
 variables(Technicien,QtyPerDay,Benef,Fabriquer) :- 
 	Technicien = [](5,7,2,6,9,3,7,5,3),
 	QtyPerDay = [](140,130,60,95,70,85,100,30,45),
 	Benef = [](4,5,8,5,6,4,7,10,11),
 	dim(Benef,[Dim]),
 	dim(Fabriquer,[Dim]),
-	Fabriquer #:: 0..1
-.
+	Fabriquer #:: 0..1.
 
+% Tools for next calculus : (a1, a2, a3) x (b1, b2, b3) = (a1 x b1, a2 x b2, a3 x b3).
 produit_vecteur(Vect1, Vect2, Result) :-
 	dim(Vect1,[Dim]),
 	dim(Result,[Dim]),
@@ -71,6 +76,8 @@ produit_vecteur(Vect1, Vect2, Result) :-
 	 )
 	).
 
+
+% Tools for next calculus : (a1, a2, a3) x (b1, b2, b3) = a1 x b1 + a2 x b2 + a3 x b3.
 produit_scalaire(Vect1,Vect2,Result) :-
 	produit_vecteur(Vect1, Vect2, ResultInter),
 	dim(Vect1,[Dim]),
